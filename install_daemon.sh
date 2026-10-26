@@ -19,7 +19,16 @@ if launchctl list | grep -q "com.user.keyboardsounds"; then
     launchctl unload "${TARGET_PLIST}" 2>/dev/null || true
 fi
 
-# 3. Copy plist into ~/Library/LaunchAgents/
+# 3. Ensure plist exists (generate from .example if missing)
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ ! -f "${SOURCE_PLIST}" ] && [ -f "${SOURCE_PLIST}.example" ]; then
+    echo "Generating ${PLIST_NAME} from template..."
+    sed -e "s|/PATH/TO/PROJECT|${PROJECT_DIR}|g" \
+        -e "s|YOUR_USERNAME|${USER}|g" \
+        "${SOURCE_PLIST}.example" > "${SOURCE_PLIST}"
+fi
+
+# 4. Copy plist into ~/Library/LaunchAgents/
 echo "Copying ${PLIST_NAME} to ${TARGET_DIR}..."
 cp "${SOURCE_PLIST}" "${TARGET_PLIST}"
 
